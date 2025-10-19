@@ -5,10 +5,30 @@ echo root mount is $VOLUME_GROUP_NAME
 boot=$(mount | grep /target/boot | awk '{print $1}')
 efi=$(mount | grep /target/boot/efi | awk '{print $1}')
 
-umount /target/boot/efi/
-umount /target/boot/
-umount /target/
-mount /dev/mapper/$VOLUME_GROUP_NAME /mnt
+if umount /target/boot/efi/; then
+    echo "Error: failed to unmount /target/boot/efi/"
+    exit 1
+echo successfully unmounted /target/boot/efi/
+sleep 1
+
+if umount /target/boot/; then
+    echo "Error: failed to unmount /target/boot/"
+    exit 1
+echo successfully unmounted /target/boot/
+sleep 1
+
+if umount /target/; then
+    echo "Error: failed to unmount /target/"
+    exit 1
+echo successfully unmounted /target/
+sleep 1
+
+if mount $VOLUME_GROUP_NAME /mnt; then
+    echo "Error: failed to mount $VOLUME_GROUP_NAME"
+    exit 1
+echo successfully mounted $VOLUME_GROUP_NAME
+sleep 1
+
 cd /mnt
 
 # for snapper support
@@ -39,7 +59,7 @@ echo "subvolumes created"
 sleep 1
 
 # mount root directory
-if mount -o ssd,noatime,space_cache=v2,commit=120,compress=zstd:1,discard=async,subvol=@ /dev/mapper/$VOLUME_GROUP_NAME /target; then
+if mount -o ssd,noatime,space_cache=v2,commit=120,compress=zstd:1,discard=async,subvol=@ $VOLUME_GROUP_NAME /target; then
     echo "successfully mounted @"
     sleep 1
 else
@@ -68,11 +88,11 @@ sleep 1
 
 # mount subvolumes
 mountoptions=(
-    ssd,noatime,space_cache=v2,commit=120,compress=zstd:1,discard=async,subvol=@snapshots /dev/mapper/$VOLUME_GROUP_NAME /target/.snapshots
-    ssd,noatime,space_cache=v2,commit=120,compress=zstd:1,discard=async,subvol=@home /dev/mapper/$VOLUME_GROUP_NAME /target/home
-    ssd,noatime,nodatacow,space_cache=v2,commit=120,discard=async,subvol=@tmp /dev/mapper/$VOLUME_GROUP_NAME /target/tmp
-    ssd,noatime,space_cache=v2,commit=120,compress=zstd:1,discard=async,subvol=@var /dev/mapper/$VOLUME_GROUP_NAME /target/var
-    ssd,noatime,space_cache=v2,commit=120,compress=zstd:1,discard=async,subvol=@opt /dev/mapper/$VOLUME_GROUP_NAME /target/opt
+    ssd,noatime,space_cache=v2,commit=120,compress=zstd:1,discard=async,subvol=@snapshots $VOLUME_GROUP_NAME /target/.snapshots
+    ssd,noatime,space_cache=v2,commit=120,compress=zstd:1,discard=async,subvol=@home $VOLUME_GROUP_NAME /target/home
+    ssd,noatime,nodatacow,space_cache=v2,commit=120,discard=async,subvol=@tmp $VOLUME_GROUP_NAME /target/tmp
+    ssd,noatime,space_cache=v2,commit=120,compress=zstd:1,discard=async,subvol=@var $VOLUME_GROUP_NAME /target/var
+    ssd,noatime,space_cache=v2,commit=120,compress=zstd:1,discard=async,subvol=@opt $VOLUME_GROUP_NAME /target/opt
 )
 for mountoption in "${mountoptions[@]}"
 do
@@ -101,12 +121,12 @@ sed '/$VOLUME_GROUP_NAME/d' etc/fstab >> /dev/null
 
 # writing /target/etc/fstab
 fstab_entries=(
-    "/dev/mapper/$VOLUME_GROUP_NAME /             btrfs  ssd,noatime,space_cache=v2,commit=120,compress=zstd:1,discard=async,subvol=@           0    1"
-    "/dev/mapper/$VOLUME_GROUP_NAME /.snapshots   btrfs  ssd,noatime,space_cache=v2,commit=120,compress=zstd:1,discard=async,subvol=@snapshots  0    2"
-    "/dev/mapper/$VOLUME_GROUP_NAME /home         btrfs  ssd,noatime,space_cache=v2,commit=120,compress=zstd:1,discard=async,subvol=@home       0    2"
-    "/dev/mapper/$VOLUME_GROUP_NAME /tmp          btrfs  ssd,noatime,nodatacow,space_cache=v2,commit=120,discard=async,subvol=@tmp              0    2"
-    "/dev/mapper/$VOLUME_GROUP_NAME /var          btrfs  ssd,noatime,space_cache=v2,commit=120,compress=zstd:1,discard=async,subvol=@var        0    2"
-    "/dev/mapper/$VOLUME_GROUP_NAME /opt          btrfs  ssd,noatime,space_cache=v2,commit=120,compress=zstd:1,discard=async,subvol=@opt        0    2"
+    "$VOLUME_GROUP_NAME /             btrfs  ssd,noatime,space_cache=v2,commit=120,compress=zstd:1,discard=async,subvol=@           0    1"
+    "$VOLUME_GROUP_NAME /.snapshots   btrfs  ssd,noatime,space_cache=v2,commit=120,compress=zstd:1,discard=async,subvol=@snapshots  0    2"
+    "$VOLUME_GROUP_NAME /home         btrfs  ssd,noatime,space_cache=v2,commit=120,compress=zstd:1,discard=async,subvol=@home       0    2"
+    "$VOLUME_GROUP_NAME /tmp          btrfs  ssd,noatime,nodatacow,space_cache=v2,commit=120,discard=async,subvol=@tmp              0    2"
+    "$VOLUME_GROUP_NAME /var          btrfs  ssd,noatime,space_cache=v2,commit=120,compress=zstd:1,discard=async,subvol=@var        0    2"
+    "$VOLUME_GROUP_NAME /opt          btrfs  ssd,noatime,space_cache=v2,commit=120,compress=zstd:1,discard=async,subvol=@opt        0    2"
 )
 for fstab_entry in "${fstab_entries[@]}"
 do
