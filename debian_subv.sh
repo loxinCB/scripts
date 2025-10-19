@@ -1,4 +1,6 @@
 #!/bin/sh
+
+## TODO: clean up if statements
 VOLUME_GROUP_NAME=$(mount | grep /@rootfs | awk '{print $1}')
 echo root mount is $VOLUME_GROUP_NAME
 # get boot and efi partitions
