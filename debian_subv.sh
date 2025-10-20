@@ -1,6 +1,5 @@
 #!/bin/sh
 
-## TODO: clean up if statements
 VOLUME_GROUP_NAME=$(mount | grep /@rootfs | awk '{print $1}')
 echo root mount is $VOLUME_GROUP_NAME
 # get boot and efi partitions
@@ -10,24 +9,28 @@ efi=$(mount | grep /target/boot/efi | awk '{print $1}')
 if umount /target/boot/efi/; then
     echo "Error: failed to unmount /target/boot/efi/"
     exit 1
+fi
 echo successfully unmounted /target/boot/efi/
 sleep 1
 
 if umount /target/boot/; then
     echo "Error: failed to unmount /target/boot/"
     exit 1
+fi
 echo successfully unmounted /target/boot/
 sleep 1
 
 if umount /target/; then
     echo "Error: failed to unmount /target/"
     exit 1
+fi
 echo successfully unmounted /target/
 sleep 1
 
 if mount $VOLUME_GROUP_NAME /mnt; then
     echo "Error: failed to mount $VOLUME_GROUP_NAME"
     exit 1
+fi
 echo successfully mounted $VOLUME_GROUP_NAME
 sleep 1
 
@@ -56,7 +59,8 @@ do
     if ! btrfs subvolume create "$sub"; then
         echo "Error: failed to create subvolume $sub"
         exit 1
-done;
+    fi
+done
 echo "subvolumes created"
 sleep 1
 
@@ -84,6 +88,7 @@ do
     if ! mkdir -p "$mountpoint"; then
         echo "Error: failed to create mountpoint $mountpoint"
         exit 1
+    fi
 done
 echo "mountpoints created"
 sleep 1
@@ -102,6 +107,7 @@ do
     if ! mount -o "$mountoption"; then
         echo "Error: failed to mount with $mountoption"
         exit 1
+    fi
 done
 echo mounting subvolumes completed
 sleep 1
@@ -110,11 +116,13 @@ sleep 1
 if ! mount $boot boot; then
         echo "Error: failed to mount $boot"
         exit 1
+fi
 echo successfully mounted "$boot"
 sleep 1
 if ! mount $efi boot/efi; then
         echo "Error: failed to mount $efi"
         exit 1
+fi
 echo successfully mounted "$efi"
 sleep 1
 
@@ -136,6 +144,8 @@ do
     if ! echo "$fstab_entry" >> etc/fstab; then
         echo "Error: failed to write into etc/fstab"
         exit 1
+    fi
+done
 echo successfully added entries to etc/fstab
 sleep 1
 
