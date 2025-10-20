@@ -6,28 +6,28 @@ echo root mount is $VOLUME_GROUP_NAME
 boot=$(mount | grep /target/boot | awk '{print $1}')
 efi=$(mount | grep /target/boot/efi | awk '{print $1}')
 
-if umount /target/boot/efi/; then
+if ! umount /target/boot/efi/; then
     echo "Error: failed to unmount /target/boot/efi/"
     exit 1
 fi
 echo successfully unmounted /target/boot/efi/
 sleep 1
 
-if umount /target/boot/; then
+if ! umount /target/boot/; then
     echo "Error: failed to unmount /target/boot/"
     exit 1
 fi
 echo successfully unmounted /target/boot/
 sleep 1
 
-if umount /target/; then
+if ! umount /target/; then
     echo "Error: failed to unmount /target/"
     exit 1
 fi
 echo successfully unmounted /target/
 sleep 1
 
-if mount $VOLUME_GROUP_NAME /mnt; then
+if ! mount $VOLUME_GROUP_NAME /mnt; then
     echo "Error: failed to mount $VOLUME_GROUP_NAME"
     exit 1
 fi
@@ -46,7 +46,7 @@ else
 fi
 
 # create subvolumes
-subs=(
+subs=$(
     @snapshots
     @home
     @tmp
@@ -75,7 +75,7 @@ fi
 
 cd /target
 # create mount points
-mountpoints=(
+mountpoints=$(
     .snapshots
     home
     tmp
@@ -94,7 +94,7 @@ echo "mountpoints created"
 sleep 1
 
 # mount subvolumes
-mountoptions=(
+mountoptions=$(
     ssd,noatime,space_cache=v2,commit=120,compress=zstd:1,discard=async,subvol=@snapshots $VOLUME_GROUP_NAME /target/.snapshots
     ssd,noatime,space_cache=v2,commit=120,compress=zstd:1,discard=async,subvol=@home $VOLUME_GROUP_NAME /target/home
     ssd,noatime,nodatacow,space_cache=v2,commit=120,discard=async,subvol=@tmp $VOLUME_GROUP_NAME /target/tmp
@@ -130,7 +130,7 @@ sleep 1
 sed '/$VOLUME_GROUP_NAME/d' etc/fstab >> /dev/null
 
 # writing /target/etc/fstab
-fstab_entries=(
+fstab_entries=$(
     "$VOLUME_GROUP_NAME /             btrfs  ssd,noatime,space_cache=v2,commit=120,compress=zstd:1,discard=async,subvol=@           0    1"
     "$VOLUME_GROUP_NAME /.snapshots   btrfs  ssd,noatime,space_cache=v2,commit=120,compress=zstd:1,discard=async,subvol=@snapshots  0    2"
     "$VOLUME_GROUP_NAME /home         btrfs  ssd,noatime,space_cache=v2,commit=120,compress=zstd:1,discard=async,subvol=@home       0    2"
