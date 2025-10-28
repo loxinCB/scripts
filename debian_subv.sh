@@ -3,8 +3,8 @@
 VOLUME_GROUP_NAME=$(mount | grep /@rootfs | awk '{print $1}')
 echo root mount is $VOLUME_GROUP_NAME
 # get boot and efi partitions
-boot=$(mount | grep /target/boot | awk '{print $1}')
-efi=$(mount | grep /target/boot/efi | awk '{print $1}')
+boot=$(mount | grep '/target/boot ' | awk '{print $1}')
+efi=$(mount | grep '/target/boot/efi' | awk '{print $1}')
 
 echo "Unmounting /target/boot/efi/..."
 if umount /target/boot/efi/; then
