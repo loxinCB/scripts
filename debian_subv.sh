@@ -159,7 +159,7 @@ else
 fi
 
 # remove original fstab entry for @
-sed '/$VOLUME_GROUP_NAME/d' etc/fstab
+awk -v dev="VOLUME_GROUP_NAME" '!found && $0 ~ "^"dev {found=1; next} 1' /target/etc/fstab > tmpfile && mv tmpfile /target/etc/fstab
 
 # writing /target/etc/fstab
 echo "Writing root (@) entry..."
