@@ -159,7 +159,7 @@ else
 fi
 
 # remove original fstab entry for @
-sed '/$VOLUME_GROUP_NAME/d' etc/fstab >> /dev/null
+sed '/$VOLUME_GROUP_NAME/d' etc/fstab
 
 # writing /target/etc/fstab
 echo "Writing root (@) entry..."
